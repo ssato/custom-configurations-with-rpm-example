@@ -28,15 +28,14 @@ popd
 
 %install
 pushd build
-  install -d %{buildroot}/%{_sysconfdir}/sudoers.d
-  install -d %{buildroot}/%{_sysconfdir}/sysctl.d/
-  install -d %{buildroot}/%{_sysconfdir}/security/limits.d
+  install -d %{buildroot}/srv/www/pub/{isos,rhel-8.x/}
+  install -d %{buildroot}/%{_sysconfdir}/{sudoers.d,sysctl.d,security/limits.d}
 
   cat << EOF > %{buildroot}/%{_sysconfdir}/sudoers.d/ansible
 ansible ALL=(ALL)       NOPASSWD:ALL
 EOF
   cat << EOF > %{buildroot}/%{_sysconfdir}/sysctl.d/20-local.conf
-fs.file-max = 2000000
+fs.file-max = 200000
 EOF
   cat << EOF > %{buildroot}/%{_sysconfdir}/security/limits.d/ansible.conf
 ansible hard nproc 2048
@@ -48,9 +47,21 @@ popd
 #  ctest -VV
 #popd
 
+%post
+if [ "$1" = 0 ]; then
+  grep -E '/srv/www/pub/rhel-8.x' %{_sysconfdir}/fstab 2>/dev/null || {
+    cat << EOF >> %{_sysconfdir}/fstab
+# mount iso image as yum repo sources
+/srv/www/pub/isos/rhel-8.0-x86_64-dvd.iso /srv/www/pub/rhel-8.x iso9660 ro,loop,noauto 0 0
+EOF
+  }
+fi
+
 %files
 %license LICENSE.MIT
 %doc README.rst
+%dir /srv/www/pub/isos/
+%dir /srv/www/pub/rhel-8.x/
 %{_sysconfdir}/sysctl.d/*.conf
 %{_sysconfdir}/security/limits.d/*.conf
 %defattr(0660, root, root)
