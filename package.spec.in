@@ -1,0 +1,60 @@
+%define debug_package %{nil}
+
+Name:           @CPACK_PACKAGE_NAME@
+Version:        @CPACK_PACKAGE_VERSION@
+Release:        1%{?dist}
+Summary:        Custom confgiruations as RPM
+License:        MIT
+# TODO:
+#Source0: %%{url}/archive/%%{version}/%%{name}-%%{version}.tar.xz
+Source0:        %{name}-%{version}.tar.xz
+Requires:       sudo
+BuildRequires:  cmake
+BuildArch:      noarch
+
+%description
+Example of custom confgiruations will be in customized system images composed
+using Image Builder aka composer (lorax-composer).
+
+%prep
+%autosetup -p1
+mkdir build
+
+%build
+pushd build
+  %cmake ..
+  %make_build
+popd
+
+%install
+pushd build
+  install -d %{buildroot}/%{_sysconfdir}/sudoers.d
+  install -d %{buildroot}/%{_sysconfdir}/sysctl.d/
+  install -d %{buildroot}/%{_sysconfdir}/security/limits.d
+
+  cat << EOF > %{buildroot}/%{_sysconfdir}/sudoers.d/ansible
+ansible ALL=(ALL)       NOPASSWD:ALL
+EOF
+  cat << EOF > %{buildroot}/%{_sysconfdir}/sysctl.d/20-local.conf
+fs.file-max = 2000000
+EOF
+  cat << EOF > %{buildroot}/%{_sysconfdir}/security/limits.d/ansible.conf
+ansible hard nproc 2048
+EOF
+popd
+
+#%check
+#pushd build
+#  ctest -VV
+#popd
+
+%files
+%license LICENSE.MIT
+%{_sysconfdir}/sysctl.d/*.conf
+%{_sysconfdir}/security/limits.d/*.conf
+%defattr(0660, root, root)
+%{_sysconfdir}/sudoers.d/*
+
+%changelog
+* Sat Aug 17 2019 Satoru SATOH <ssato@redhat.com> - 1.0.0-1
+- Initial packaging
