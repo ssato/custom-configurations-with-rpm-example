@@ -48,14 +48,12 @@ popd
 #popd
 
 %post
-if [ "$1" = 0 ]; then
-  grep -E '/srv/www/pub/rhel-8.x' %{_sysconfdir}/fstab 2>/dev/null || {
-    cat << EOF >> %{_sysconfdir}/fstab
+grep -E '/srv/www/pub/rhel-8.x' %{_sysconfdir}/fstab 2>/dev/null || {
+cat << EOF >> %{_sysconfdir}/fstab
 # mount iso image as yum repo sources
 /srv/www/pub/isos/rhel-8.0-x86_64-dvd.iso /srv/www/pub/rhel-8.x iso9660 ro,loop,noauto 0 0
 EOF
-  }
-fi
+}
 
 %files
 %license LICENSE.MIT
