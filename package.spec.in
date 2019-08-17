@@ -50,6 +50,7 @@ popd
 
 %files
 %license LICENSE.MIT
+%doc README.rst
 %{_sysconfdir}/sysctl.d/*.conf
 %{_sysconfdir}/security/limits.d/*.conf
 %defattr(0660, root, root)
